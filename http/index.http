@@ -1,0 +1,27 @@
+### 商家销量
+GET {{url}}/api/seller
+Accept: application/json
+
+### 预算开销
+GET {{url}}/api/budget
+Accept: application/json
+
+### 库存信息
+GET {{url}}/api/stock
+Accept: application/json
+
+### 销量趋势
+GET {{url}}/api/trend
+Accept: application/json
+
+### 销量排行
+GET {{url}}/api/rank
+Accept: application/json
+
+### 商家分布
+GET {{url}}/api/map
+Accept: application/json
+
+### 热销商品
+GET {{url}}/api/hotproduct
+Accept: application/json
