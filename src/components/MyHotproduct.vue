@@ -1,19 +1,30 @@
 <template>
   <div class="com-container">
     <div class="com-chart" ref="hotproductRef"></div>
-    <span class="iconfont arrow-left" :style="{fontSize: titleFontSize * 1.5 + 'px'}" @click="toLeft">&#xe6ef;</span>
-    <span class="iconfont arrow-right" :style="{fontSize: titleFontSize * 1.5 + 'px'}" @click="toRight">&#xe6ed;</span>
-    <span class="cat-name" :style="{fontSize: titleFontSize + 'px'}">| {{ catName }}</span>
+    <span class="iconfont arrow-left" :style="comStyle" @click="toLeft">&#xe6ef;</span>
+    <span class="iconfont arrow-right" :style="comStyle" @click="toRight">&#xe6ed;</span>
+    <span class="cat-name" :style="comStyle">| {{ catName }}</span>
   </div>
 </template>
 
 <script>
 import { markRaw } from 'vue'
+import { mapState } from 'vuex'
+import { getThemeValue } from '@/utils/themeUtils'
 
 export default {
+  created() {
+    this.$socket.registerCallback('hotproductData', this.getData) // 在组件创建时注册回调函数
+  },
   mounted() {
     this.initChart()
-    this.getData()
+    // this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'hotproductData',
+      chartName: 'hotproduct',
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
@@ -30,7 +41,7 @@ export default {
   },
   methods: {
     initChart() {
-      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.hotproductRef, 'chalk', { renderer: 'svg' }))
+      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.hotproductRef, this.theme, { renderer: 'svg' }))
       const initOption = {
         title: {
           text: '| 热销商品的占比',
@@ -38,7 +49,7 @@ export default {
           top: '2%'
         },
         legend: {
-          top: '15%',
+          top: '20%',
           icon: 'circle'
         },
         tooltip: {
@@ -78,8 +89,8 @@ export default {
       }
       this.echartsInstance.setOption(initOption)
     },
-    async getData() {
-      const { data } = await this.$http.get('/api/hotproduct')
+    async getData(data) {
+      // const { data } = await this.$http.get('/api/hotproduct')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.updateChart()
@@ -107,8 +118,8 @@ export default {
           }
         },
         legend: {
-          itemWidth: this.titleFontSize / 2,
-          itemHeight: this.titleFontSize / 2,
+          itemWidth: this.titleFontSize,
+          itemHeight: this.titleFontSize,
           itemGap: this.titleFontSize / 2,
           textStyle: {
             fontSize: this.titleFontSize / 2
@@ -136,9 +147,24 @@ export default {
     }
   },
   computed: {
+    ...mapState(['theme']),
     catName() { // 返回当前一级分类的名字
       if (!this.data || !this.data[this.currentIndex] || !this.data[this.currentIndex].name) return ''
       return this.data[this.currentIndex].name
+    },
+    comStyle() { // 返回组件的样式
+      return {
+        fontSize: this.titleFontSize * 1.5 + 'px',
+        color: getThemeValue(this.theme).titleColor
+      }
+    }
+  },
+  watch: {
+    theme() {
+      this.echartsInstance.dispose() // 销毁图表
+      this.initChart()
+      this.updateChart()
+      this.screenAdapter()
     }
   }
 }

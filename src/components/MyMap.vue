@@ -6,13 +6,23 @@
 
 <script>
 import { markRaw } from 'vue'
+import { mapState } from 'vuex'
 import axios from 'axios'
 import { getProvinceMapInfo } from '@/utils/mapUtils'
 
 export default {
+  created() {
+    this.$socket.registerCallback('mapData', this.getData) // 在组件创建时注册回调函数
+  },
   mounted() {
     this.initChart()
-    this.getData()
+    // this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'mapData',
+      chartName: 'map',
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
@@ -28,7 +38,7 @@ export default {
   },
   methods: {
     async initChart() {
-      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.mapRef, 'chalk', { renderer: 'svg' }))
+      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.mapRef, this.theme, { renderer: 'svg' }))
       const { data: chinaMap } = await axios.get('http://localhost:8080/static/map/china.json') // 请求 public 文件夹下的资源
       this.$echarts.registerMap('chinaMap', chinaMap)
       const initOption = {
@@ -71,8 +81,8 @@ export default {
         this.echartsInstance.setOption(changeOption)
       })
     },
-    async getData() {
-      const { data } = await this.$http.get('/api/map')
+    async getData(data) {
+      // const { data } = await this.$http.get('/api/map')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.updateChart()
@@ -124,6 +134,17 @@ export default {
         }
       }
       this.echartsInstance.setOption(revertOption)
+    }
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.echartsInstance.dispose() // 销毁图表
+      this.initChart()
+      this.updateChart()
+      this.screenAdapter()
     }
   }
 }

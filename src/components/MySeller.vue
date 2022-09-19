@@ -6,17 +6,29 @@
 
 <script>
 import { markRaw } from 'vue'
+import { mapState } from 'vuex'
 
 export default {
+  created() {
+    this.$socket.registerCallback('sellerData', this.getData) // 在组件创建时注册回调函数
+  },
   mounted() {
     this.initChart()
-    this.getData()
+    // 用 WebSocket 改造
+    // this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'sellerData',
+      chartName: 'seller',
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter() // 页面加载完成后主动进行屏幕适配
   },
   unmounted() {
     clearInterval(this.timerId)
     window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallback('sellerData') // 在组件销毁时取消回调函数
   },
   data() {
     return {
@@ -33,7 +45,7 @@ export default {
   methods: {
     initChart() { // 初始化 echartsInstance 对象
       // 用 markRaw 让 echarts 从监听对象变成普通对象，解决 tooltip.trigger: 'axis' 不显示问题
-      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.sellerRef, 'chalk', { renderer: 'svg' }))
+      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.sellerRef, this.theme, { renderer: 'svg' }))
       const initOption = { // 图表初始化配置
         title: {
           text: '| 商家销售统计',
@@ -87,8 +99,9 @@ export default {
       this.echartsInstance.on('mouseover', () => clearInterval(this.timerId)) // 鼠标移入关闭定时器
       this.echartsInstance.on('mouseout', () => this.startInterval()) // 鼠标移开启动定时器
     },
-    async getData() { // 获取服务器的数据
-      const { data } = await this.$http.get('/api/seller')
+    async getData(data) { // 获取服务器的数据
+      // 用 WebSocket 改造
+      // const { data } = await this.$http.get('/api/seller')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data.sort((a, b) => a.value - b.value) // 按照 value 值从小到大排序
       this.pagination.totalPage = this.data.length % this.pagination.size === 0 // 计算总页数
@@ -153,6 +166,17 @@ export default {
       }
       this.echartsInstance.setOption(adapterOption)
       this.echartsInstance.resize() // 调整图表大小，完成自适应
+    }
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.echartsInstance.dispose() // 销毁图表
+      this.initChart()
+      this.updateChart()
+      this.screenAdapter()
     }
   }
 }

@@ -6,11 +6,21 @@
 
 <script>
 import { markRaw } from 'vue'
+import { mapState } from 'vuex'
 
 export default {
+  created() {
+    this.$socket.registerCallback('rankData', this.getData) // 在组件创建时注册回调函数
+  },
   mounted() {
     this.initChart()
-    this.getData()
+    // this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'rankData',
+      chartName: 'rank',
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
@@ -29,7 +39,7 @@ export default {
   },
   methods: {
     initChart() {
-      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.rankRef, 'chalk', { renderer: 'svg' }))
+      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.rankRef, this.theme, { renderer: 'svg' }))
       const initOption = {
         title: {
           text: '| 地区销售排行',
@@ -55,8 +65,8 @@ export default {
       this.echartsInstance.on('mouseover', () => clearInterval(this.timerId))
       this.echartsInstance.on('mouseout', () => this.startInterval())
     },
-    async getData() {
-      const { data } = await this.$http.get('/api/rank')
+    async getData(data) {
+      // const { data } = await this.$http.get('/api/rank')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.data.sort((a, b) => b.value - a.value) // 从大到小排序
@@ -139,6 +149,17 @@ export default {
         }
         this.updateChart()
       }, 2000)
+    }
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.echartsInstance.dispose() // 销毁图表
+      this.initChart()
+      this.updateChart()
+      this.screenAdapter()
     }
   }
 }

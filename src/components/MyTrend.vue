@@ -1,8 +1,8 @@
 <template>
   <div class="com-container">
-    <div class="title" :style="{fontSize: this.titleFontSize + 'px'}">
+    <div class="title" :style="comStyle">
       <span>| {{ showTitle }}</span>
-      <span class="iconfont title-arrow" :style="{fontSize: titleFontSize + 'px'}" @click="showSelect = !showSelect">&#xe6eb;</span>
+      <span class="iconfont title-arrow" :style="comStyle" @click="showSelect = !showSelect">&#xe6eb;</span>
       <div class="select" v-show="showSelect" :style="{marginLeft: titleFontSize + 5 + 'px'}">
         <div class="select-item" v-for="item in selectTypes" :key="item.key" @click="handleSelect(item.key)">{{ item.text }}</div>
       </div>
@@ -13,11 +13,22 @@
 
 <script>
 import { markRaw } from 'vue'
+import { mapState } from 'vuex'
+import { getThemeValue } from '@/utils/themeUtils'
 
 export default {
+  created() {
+    this.$socket.registerCallback('trendData', this.getData) // 在组件创建时注册回调函数
+  },
   mounted() {
     this.initChart()
-    this.getData()
+    // this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'trendData',
+      chartName: 'trend',
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
@@ -35,10 +46,10 @@ export default {
   },
   methods: {
     initChart() {
-      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.trendRef, 'chalk', { renderer: 'svg' }))
+      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.trendRef, this.theme, { renderer: 'svg' }))
       const initOption = {
         legend: {
-          left: '2%',
+          left: '3%',
           top: '16%',
           icon: 'circle'
         },
@@ -62,8 +73,8 @@ export default {
       }
       this.echartsInstance.setOption(initOption)
     },
-    async getData() {
-      const { data } = await this.$http.get('/api/trend')
+    async getData(data) {
+      // const { data } = await this.$http.get('/api/trend')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.updateChart()
@@ -131,6 +142,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['theme']),
     selectTypes() { // 返回所有可选类型
       if (!this.data || !this.data.type) return []
       return this.data.type.filter(item => item.key !== this.selectType) // 去除掉当前选择的类型
@@ -138,6 +150,20 @@ export default {
     showTitle() { // 返回当前选择的类型对应显示的标题
       if (!this.data) return ''
       return this.data[this.selectType].title
+    },
+    comStyle() { // 返回组件的样式
+      return {
+        fontSize: this.titleFontSize + 'px',
+        color: getThemeValue(this.theme).titleColor
+      }
+    }
+  },
+  watch: {
+    theme() {
+      this.echartsInstance.dispose() // 销毁图表
+      this.initChart()
+      this.updateChart()
+      this.screenAdapter()
     }
   }
 }
@@ -148,7 +174,7 @@ export default {
   position: absolute;
   top: 2%;
   left: 1%;
-  background-color: #222733;
+  //background-color: #222733;
   color: white;
   z-index: 1;
 

@@ -6,11 +6,21 @@
 
 <script>
 import { markRaw } from 'vue'
+import { mapState } from 'vuex'
 
 export default {
+  created() {
+    this.$socket.registerCallback('stockData', this.getData) // 在组件创建时注册回调函数
+  },
   mounted() {
     this.initChart()
-    this.getData()
+    // this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'stockData',
+      chartName: 'stock',
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
@@ -32,21 +42,20 @@ export default {
   },
   methods: {
     initChart() {
-      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.stockRef, 'chalk', { renderer: 'svg' }))
+      this.echartsInstance = markRaw(this.$echarts.init(this.$refs.stockRef, this.theme, { renderer: 'svg' }))
       const initOption = {
         title: {
           text: '| 库存和销量分析',
           left: '1%',
           top: '2%'
-        },
-        tooltip: {}
+        }
       }
       this.echartsInstance.setOption(initOption)
       this.echartsInstance.on('mouseover', () => clearInterval(this.timerId))
       this.echartsInstance.on('mouseout', () => this.startInterval())
     },
-    async getData() {
-      const { data } = await this.$http.get('/api/stock')
+    async getData(data) {
+      // const { data } = await this.$http.get('/api/stock')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.pagination.totalPage = this.data.length % this.pagination.size === 0
@@ -100,7 +109,7 @@ export default {
             }
           },
           {
-            name: `${item.name}\n${item.sales}`,
+            name: `${item.name}\n\n${item.sales}`,
             value: item.stock, // 销量
             itemStyle: {
               color: '#333843'
@@ -115,6 +124,8 @@ export default {
     },
     screenAdapter() {
       const titleFontSize = this.$refs.stockRef.offsetWidth / 100 * 3.6
+      const innerRadius = titleFontSize * 2.8
+      const outerRadius = innerRadius * 1.125
       const adapterOption = {
         title: {
           textStyle: {
@@ -124,35 +135,35 @@ export default {
         series: [
           {
             type: 'pie',
-            radius: [titleFontSize / 2 + '%', titleFontSize / 2.3 + '%'],
+            radius: [outerRadius, innerRadius],
             label: {
               fontSize: titleFontSize / 2
             }
           },
           {
             type: 'pie',
-            radius: [titleFontSize / 2 + '%', titleFontSize / 2.3 + '%'],
+            radius: [outerRadius, innerRadius],
             label: {
               fontSize: titleFontSize / 2
             }
           },
           {
             type: 'pie',
-            radius: [titleFontSize / 2 + '%', titleFontSize / 2.3 + '%'],
+            radius: [outerRadius, innerRadius],
             label: {
               fontSize: titleFontSize / 2
             }
           },
           {
             type: 'pie',
-            radius: [titleFontSize / 2 + '%', titleFontSize / 2.3 + '%'],
+            radius: [outerRadius, innerRadius],
             label: {
               fontSize: titleFontSize / 2
             }
           },
           {
             type: 'pie',
-            radius: [titleFontSize / 2 + '%', titleFontSize / 2.3 + '%'],
+            radius: [outerRadius, innerRadius],
             label: {
               fontSize: titleFontSize / 2
             }
@@ -168,6 +179,17 @@ export default {
         if (++this.pagination.current > this.pagination.totalPage) this.pagination.current = 1
         this.updateChart()
       }, 5000)
+    }
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme() {
+      this.echartsInstance.dispose() // 销毁图表
+      this.initChart()
+      this.updateChart()
+      this.screenAdapter()
     }
   }
 }

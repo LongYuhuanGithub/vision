@@ -1,15 +1,12 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
 html,
 body,
 #app,
-.app {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.com-view,
+.app,
 .com-container,
 .com-chart {
   width: 100%;
@@ -19,4 +16,9 @@ body,
 
 svg {
   border-radius: 20px;
+}
+
+// 给每个图表组件的根元素添加相对定位，因为组件内有绝对定位
+.com-container {
+  position: relative;
 }
