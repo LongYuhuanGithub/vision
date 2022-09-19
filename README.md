@@ -2,7 +2,7 @@
 
 ## Project display
 
-![](public/static/images/typora/project_display.png)
+
 
 ## Project setup
 ```
