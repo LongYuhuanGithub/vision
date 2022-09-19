@@ -10,8 +10,6 @@ import router from '@/router'
 import store from '@/store'
 import WebSocketService from '@/utils/webSocketService'
 
-axios.defaults.baseURL = 'http://localhost:3000'
-
 WebSocketService.getInstance.connect() // 连接 WebSocket 服务器
 
 const vue = createApp(App)

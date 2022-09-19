@@ -7,7 +7,6 @@
 <script>
 import { markRaw } from 'vue'
 import { mapState } from 'vuex'
-import axios from 'axios'
 import { getProvinceMapInfo } from '@/utils/mapUtils'
 
 export default {
@@ -39,7 +38,7 @@ export default {
   methods: {
     async initChart() {
       this.echartsInstance = markRaw(this.$echarts.init(this.$refs.mapRef, this.theme, { renderer: 'svg' }))
-      const { data: chinaMap } = await axios.get('http://localhost:8080/static/map/china.json') // 请求 public 文件夹下的资源
+      const { data: chinaMap } = await this.$http.get('static/map/china.json') // 请求 public 文件夹下的资源
       this.$echarts.registerMap('chinaMap', chinaMap)
       const initOption = {
         title: {
@@ -69,7 +68,7 @@ export default {
       this.echartsInstance.on('click', async params => {
         const provinceMapInfo = getProvinceMapInfo(params.name) // 根据点击的省份获取对应的名称和文件路径
         if (!this.provinceMapCache[provinceMapInfo.name]) { // 判断是否缓存
-          const { data: provinceMap } = await axios.get('http://localhost:8080' + provinceMapInfo.path) // 请求对应省份的矢量数据
+          const { data: provinceMap } = await this.$http.get('static/map' + provinceMapInfo.path) // 请求对应省份的矢量数据
           this.provinceMapCache[provinceMapInfo.name] = provinceMap // 缓存省份数据
           this.$echarts.registerMap(provinceMapInfo.name, provinceMap)
         }
@@ -82,7 +81,7 @@ export default {
       })
     },
     async getData(data) {
-      // const { data } = await this.$http.get('/api/map')
+      // const { data } = await this.$http.get('http://localhost:3000/api/map')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.updateChart()

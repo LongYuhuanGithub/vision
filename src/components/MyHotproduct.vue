@@ -90,7 +90,7 @@ export default {
       this.echartsInstance.setOption(initOption)
     },
     async getData(data) {
-      // const { data } = await this.$http.get('/api/hotproduct')
+      // const { data } = await this.$http.get('http://localhost:3000/api/hotproduct')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.updateChart()

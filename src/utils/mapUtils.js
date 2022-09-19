@@ -36,7 +36,7 @@ const name2pinyin = {
 }
 
 export function getProvinceMapInfo(name) { // 返回省份对应的名称和文件路径
-  const path = `/static/map/province/${name2pinyin[name]}.json`
+  const path = `/${name2pinyin[name]}.json`
   return {
     name: name2pinyin[name] + 'Map',
     path

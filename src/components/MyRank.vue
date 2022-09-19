@@ -66,7 +66,7 @@ export default {
       this.echartsInstance.on('mouseout', () => this.startInterval())
     },
     async getData(data) {
-      // const { data } = await this.$http.get('/api/rank')
+      // const { data } = await this.$http.get('http://localhost:3000/api/rank')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data
       this.data.sort((a, b) => b.value - a.value) // 从大到小排序

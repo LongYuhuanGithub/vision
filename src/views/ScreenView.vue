@@ -139,13 +139,13 @@ export default {
   computed: {
     ...mapState(['theme']),
     logoSrc() {
-      return '/static/images/' + getThemeValue(this.theme).logoSrc
+      return 'static/images/' + getThemeValue(this.theme).logoSrc
     },
     headerBorderSrc() {
-      return '/static/images/' + getThemeValue(this.theme).headerBorderSrc
+      return 'static/images/' + getThemeValue(this.theme).headerBorderSrc
     },
     themeSrc() {
-      return '/static/images/' + getThemeValue(this.theme).themeSrc
+      return 'static/images/' + getThemeValue(this.theme).themeSrc
     },
     containerStyle() {
       return {

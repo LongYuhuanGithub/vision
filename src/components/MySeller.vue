@@ -101,7 +101,7 @@ export default {
     },
     async getData(data) { // 获取服务器的数据
       // 用 WebSocket 改造
-      // const { data } = await this.$http.get('/api/seller')
+      // const { data } = await this.$http.get('http://localhost:3000/api/seller')
       if (data.status !== 200) return alert(data.msg)
       this.data = data.data.sort((a, b) => a.value - b.value) // 按照 value 值从小到大排序
       this.pagination.totalPage = this.data.length % this.pagination.size === 0 // 计算总页数
