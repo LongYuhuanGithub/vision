@@ -2,7 +2,7 @@
 
 ## Project display
 
-![](./public/static/images/project_display.png)
+![](https://github.com/LongYuhuanGithub/vision/blob/master/public/static/images/project_display.png)
 
 ## Project setup
 ```
