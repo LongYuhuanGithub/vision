@@ -1,5 +1,9 @@
 # vision
 
+## Project display
+
+![](./public/static/images/project_display.png)
+
 ## Project setup
 ```
 npm install
