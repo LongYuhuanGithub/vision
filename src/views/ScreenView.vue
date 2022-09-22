@@ -6,9 +6,11 @@
         <img :src="headerBorderSrc" alt="">
       </div>
       <span class="logo">
-        <img :src="logoSrc" alt=""/>
+        <img src="static/images/logo.png" alt=""/>
       </span>
-      <span class="title">电商平台实时监控系统</span>
+      <span class="title">
+        电商平台实时监控系统
+      </span>
       <div class="title-right">
         <img :src="themeSrc" alt="" @click="handleThemeChange">
         <span class="datetime">2049-01-01 00:00:00</span>
@@ -138,9 +140,6 @@ export default {
   },
   computed: {
     ...mapState(['theme']),
-    logoSrc() {
-      return 'static/images/' + getThemeValue(this.theme).logoSrc
-    },
     headerBorderSrc() {
       return 'static/images/' + getThemeValue(this.theme).headerBorderSrc
     },
@@ -194,8 +193,8 @@ export default {
       transform: translateY(-55%);
 
       img {
-        width: 128px;
-        height: 35px;
+        width: 120px;
+        height: 50px;
       }
     }
 
